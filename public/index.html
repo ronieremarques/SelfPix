@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Comprovantes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #666;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background-color: #ffebee;
+            border: 1px solid #f44336;
+        }
+        .warning {
+            background-color: #fff3e0;
+            border: 1px solid #ff9800;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .metadata-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .metadata-group {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+        .metadata-title {
+            font-weight: bold;
+            color: #2196f3;
+            margin-bottom: 10px;
+        }
+        .metadata-item {
+            display: flex;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .metadata-label {
+            font-weight: bold;
+            width: 200px;
+            color: #666;
+        }
+        .metadata-value {
+            flex: 1;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .details-list {
+            list-style: none;
+            padding: 0;
+        }
+        .details-list li {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #4caf50;
+        }
+        .warnings-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .warnings-list li {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #fff3e0;
+            border-radius: 4px;
+            border-left: 3px solid #ff9800;
+        }
+        .text-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .ai-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+
+        .ai-analysis h4 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+
+        .ai-analysis pre {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Validador de Comprovantes</h1>
+        <p>Selecione um comprovante de pagamento (apenas JPG) para validação:</p>
+        
+        <div class="form-group">
+            <label for="valor">Valor Esperado (R$):</label>
+            <input type="number" id="valor" step="0.01" placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="documento">CPF/CNPJ do Beneficiário:</label>
+            <input type="text" id="documento" placeholder="000.000.000-00">
+        </div>
+        
+        <div class="form-group">
+            <label for="beneficiario">Nome do Beneficiário:</label>
+            <input type="text" id="beneficiario" placeholder="Nome completo">
+        </div>
+        
+        <div class="form-group">
+            <label for="banco">Banco do Beneficiário:</label>
+            <input type="text" id="banco" placeholder="Nome do banco">
+        </div>
+        
+        <div class="upload-area" id="dropArea">
+            <input type="file" id="fileInput" accept="image/jpeg" style="display: none;">
+            <p>Clique aqui ou arraste um arquivo JPG para fazer upload</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>Processando o comprovante, aguarde...</p>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+
+        function formatMetadataValue(value) {
+            if (typeof value === 'boolean') {
+                return value ? 'Sim' : 'Não';
+            }
+            return value || 'Não disponível';
+        }
+
+        function createMetadataSection(title, data) {
+            if (!data || Object.keys(data).length === 0) return '';
+            
+            let html = `
+                <div class="metadata-group">
+                    <div class="metadata-title">${title}</div>
+            `;
+            
+            for (const [key, value] of Object.entries(data)) {
+                html += `
+                    <div class="metadata-item">
+                        <div class="metadata-label">${key}:</div>
+                        <div class="metadata-value">${formatMetadataValue(value)}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Eventos para drag and drop
+        dropArea.addEventListener('click', () => fileInput.click());
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#4CAF50';
+        });
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#ccc';
+        });
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#ccc';
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (file.type !== 'image/jpeg') {
+                showError('Por favor, selecione apenas imagens JPG.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            // Adicionar dados esperados
+            formData.append('valor', document.getElementById('valor').value);
+            formData.append('documento', document.getElementById('documento').value);
+            formData.append('beneficiario', document.getElementById('beneficiario').value);
+            formData.append('banco', document.getElementById('banco').value);
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            fetch('/validate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+
+                if (data.success) {
+                    const validation = data.validation;
+                    result.className = 'result ' + (validation.isValid ? 'success' : 'error');
+                    
+                    let html = `<h3>${validation.isValid ? '✓ Comprovante Válido' : '✗ Comprovante Inválido'}</h3>`;
+                    
+                    // Mostrar detalhes da validação
+                    html += '<ul class="details-list">';
+                    validation.details.forEach(detail => {
+                        html += `<li>${detail}</li>`;
+                    });
+                    html += '</ul>';
+
+                    // Seção de Análise de Texto
+                    if (validation.textAnalysis) {
+                        html += '<div class="text-analysis">';
+                        html += '<h4>Análise do Texto</h4>';
+                        
+                        // Palavras-chave encontradas
+                        if (validation.textAnalysis.keywords.length > 0) {
+                            html += '<div class="metadata-group">';
+                            html += '<div class="metadata-title">Palavras-chave Encontradas</div>';
+                            html += `<div class="metadata-value">${validation.textAnalysis.keywords.join(', ')}</div>`;
+                            html += '</div>';
+                        }
+
+                        // Valores monetários
+                        if (validation.textAnalysis.valores.length > 0) {
+                            html += '<div class="metadata-group">';
+                            html += '<div class="metadata-title">Valores Monetários</div>';
+                            validation.textAnalysis.valores.forEach(valor => {
+                                html += `<div class="metadata-value">R$ ${valor.valor.toFixed(2)}</div>`;
+                            });
+                            html += '</div>';
+                        }
+
+                        // Datas encontradas
+                        if (validation.textAnalysis.datas.length > 0) {
+                            html += '<div class="metadata-group">';
+                            html += '<div class="metadata-title">Datas Encontradas</div>';
+                            html += `<div class="metadata-value">${validation.textAnalysis.datas.join(', ')}</div>`;
+                            html += '</div>';
+                        }
+
+                        html += '</div>';
+                    }
+
+                    // Seção de Metadados
+                    if (validation.metadata) {
+                        html += '<div class="metadata-section">';
+                        html += '<h4>Metadados da Imagem</h4>';
+                        
+                        // Informações básicas
+                        html += createMetadataSection('Informações Básicas', validation.metadata.basic);
+                        
+                        // Informações da imagem
+                        html += createMetadataSection('Informações Técnicas', validation.metadata.imageInfo);
+                        
+                        // Metadados EXIF
+                        html += createMetadataSection('Metadados EXIF', validation.metadata.exif);
+                        
+                        html += '</div>';
+                    }
+
+                    // Análise da IA
+                    if (validation.aiAnalysis) {
+                        html += '<div class="ai-analysis">';
+                        html += '<h4>Análise de Inteligência Artificial</h4>';
+                        html += `<pre>${validation.aiAnalysis}</pre>`;
+                        html += '</div>';
+                    }
+
+                    // Mostrar avisos se houver
+                    if (validation.metadata && validation.metadata.warnings.length > 0) {
+                        html += '<div class="warning">';
+                        html += '<h4>⚠️ Avisos de Possíveis Inconsistências:</h4>';
+                        html += '<ul class="warnings-list">';
+                        validation.metadata.warnings.forEach(warning => {
+                            html += `<li>${warning}</li>`;
+                        });
+                        html += '</ul></div>';
+                    }
+                    
+                    result.innerHTML = html;
+                } else {
+                    showError(data.error || 'Erro ao processar o comprovante.');
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                showError('Erro ao enviar o arquivo.');
+            });
+        }
+
+        function showError(message) {
+            result.className = 'result error';
+            result.style.display = 'block';
+            result.innerHTML = `<p>❌ ${message}</p>`;
+        }
+    </script>
+</body>
+</html> 

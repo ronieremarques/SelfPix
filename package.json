@@ -1,0 +1,17 @@
+{
+  "name": "receipt-validator-bot",
+  "version": "1.0.0",
+  "description": "Bot para validação de comprovantes de pagamento",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.22.0",
+    "exifreader": "^4.26.1",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.32.6",
+    "tesseract.js": "^4.1.1"
+  }
+}
