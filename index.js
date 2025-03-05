@@ -9,17 +9,6 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Array de tokens do Gemini
 const GEMINI_API_KEYS = [
-  "AIzaSyCUyj7C53pDTHwT2uNe8FNSv-jKwLI1o6w",
-  "AIzaSyCDypQ5EWWoUIlQM3msFjMwS4MO7FYii1E",
-  "AIzaSyAtC6wWdDDqtUIHWngVXE-56Vt-UKKVWaU",
-  "AIzaSyCRS_3ZXdEcmFwMgOWF64RmZ_OdUVQ5LGQ",
-  "AIzaSyD1jYHoYbNUOjh8ag1YqycUmTj1U1AcrJk",
-  "AIzaSyDFoa4LXihkh3ohOeFeyVCLjuLRSLtTw8s",
-  "AIzaSyBfL9VglQBRGBN2rHXeXVmISh54sYlyQq0",
-  "AIzaSyAIn0R7pPO5BNWy1lrsoDNNB9ZgbJR7V-A",
-  "AIzaSyC6iKioZFCg4ucb2XH0STqO69NGnNjr-Xc",
-  "AIzaSyBEp6Sp8lW97WNQT4NSxqBWqq-NSOR3Xeo",
-  "AIzaSyDVviuBi3hxJHqacxdZhl1Q_MUfQCaRS8Q"
 ];
 
 // Função para obter um token aleatório
